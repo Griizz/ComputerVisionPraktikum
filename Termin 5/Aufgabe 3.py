@@ -39,3 +39,9 @@ ax[3].set_title('Wally Match')
 
 position_wally = np.unravel_index(np.argmax(match_wally),match_wally.shape)
 print(position_wally)
+
+"""
+5.3.6: 
+Das liegt daran, dass Wally auf der Postkarte frontal zu sehen ist und unserem template von der Seite.
+Außerdem ist Postkarten Wally auch größer als unser Wally. Deshalb wird er nicht erkannt
+"""
