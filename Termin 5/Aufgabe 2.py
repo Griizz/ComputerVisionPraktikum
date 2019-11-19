@@ -16,6 +16,11 @@ imgN = imread("./catGNoisy.png")
 imgN_vertical = sobel_v(imgN, mask = None)
 imgN_horizontal = sobel_h(imgN, mask = None)
 imgN_Sum = np.sqrt(((imgN_vertical)**2)+((imgN_horizontal)**2))
+"""
+5.2.2: 
+Beim vorher gegaussten Bild sind die Linien viel breiter.Das kann daran liegen, dass starke Unterschiede zwischen 
+benachbarten Pixeln, in einer geringeren intensität, auf eine größere Fläche verteilt werden  
+"""
 
 img2 = gaussian(imgN,5)
 img2_vertical = sobel_v(img2, mask = None)
