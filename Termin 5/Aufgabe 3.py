@@ -34,7 +34,7 @@ wiwally = imread("./whereIsWally1.jpg")
 wally = imread("./wally.png")
 match_wally = match_template(wiwally,wally)
 
-ax[3].imshow(match_wally[:,:,0])
+ax[3].imshow(match_wally[:, :, 0])
 ax[3].set_title('Wally Match')
 
 position_wally = np.unravel_index(np.argmax(match_wally),match_wally.shape)
