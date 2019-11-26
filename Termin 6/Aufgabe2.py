@@ -10,19 +10,19 @@ import numpy as np
 
 np.random.seed(123)
 
-# from tensorflow import random
+from tensorflow import set_random_seed
+set_random_seed(123)
 
-def change_labels(l):
-    if l is 1:
+def change_labels(label):
+    if label == 1:
         return 0
 
-    if l is 4:
+    if label == 4:
         return 1
 
-    if l is 8:
+    if label == 8:
         return 2
 
-# 1.1
 td = np.load('./trainingsDatenFarbe2.npz')
 vd = np.load('./validierungsDatenFarbe2.npz')
 
@@ -42,10 +42,12 @@ vdDesk[:, :3] = np.mean(vdImages, axis=(1, 2))
 trDesk[:, 3:] = np.std(trImages, axis=(1, 2))
 vdDesk[:, 3:] = np.std(vdImages, axis=(1, 2))
 
-trLabels = map(change_labels, trLabels))
-vdLabels = np.map(change_labels, vdLabels)
+for i in range(0, 60):
+    trLabels[i] = change_labels(trLabels[i])
+for i in range(0, 30):
+    vdLabels[i] = change_labels(vdLabels[i])
 
-# 1.3 + 1.4
+#Hier drunter ist alt! Weiter mit 2.4
 
 trMatch = [0] * vdDesk.shape[0]
 deltaDesk = [0] * trDesk.shape[0]
@@ -57,7 +59,6 @@ for i in range(vdDesk.shape[0]):
     n = deltaDesk.index(min(deltaDesk))
     trMatch[i] = td["labels"][n]
 
-# 1.5
 tp = sum(list(map(lambda x, y: x == y, trMatch, vd['labels'])))
 
 print("Trefferquote:", tp / len(vdDesk) * 100, "%")
