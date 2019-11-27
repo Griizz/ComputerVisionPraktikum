@@ -88,8 +88,8 @@ X_train =  trImages
 X_test = vdImages
 
 
-y_train = np_utils.to_categorical(new_trl, 10)
-y_test = np_utils.to_categorical(new_val, 10)
+y_train = np_utils.to_categorical(new_trl, 3)
+y_test = np_utils.to_categorical(new_val, 3)
 
 model = Sequential()
 
