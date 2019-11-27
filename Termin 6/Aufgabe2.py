@@ -63,5 +63,52 @@ tp = sum(list(map(lambda x, y: x == y, trMatch, vd['labels'])))
 
 print("Trefferquote:", tp / len(vdDesk) * 100, "%")
 
+#1.4+
+new_trl = []
+new_val = []
 
+for l in trLabels:
+    if l == 1:
+        new_trl.append(0)
+    if l ==4:
+        new_trl.append(1)
+    if l ==8:
+        new_trl.append(2)
+        
+for v in vaLabels:
+    if v == 1:
+        new_val.append(0)
+    if v ==4:
+        new_val.append(1)
+    if v ==8:
+        new_val.append(2)
+    
+
+X_train =  trImages 
+X_test = vdImages
+
+
+y_train = np_utils.to_categorical(new_trl, 10)
+y_test = np_utils.to_categorical(new_val, 10)
+
+model = Sequential()
+
+model.add(Dense(60, activation='relu', name='fc1', 
+                  input_shape=(32,32,3)))
+model.add(Flatten())
+model.add(Dense(128, activation='relu', name='fc2'))
+model.add(Dense(10, activation='softmax'))
+
+model.compile(loss='categorical_crossentropy',
+              optimizer=SGD(lr=0.000005, momentum=0.9), 
+              metrics=['accuracy'])
+
+
+
+model.fit(X_train, y_train, batch_size=60, nb_epoch=500, verbose=1)
+
+score = model.evaluate(X_test, y_test, verbose=1)
+
+print(score)
+#nach 500 Epochen acc= 40%
 
