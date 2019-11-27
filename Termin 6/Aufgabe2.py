@@ -110,5 +110,5 @@ model.fit(X_train, y_train, batch_size=60, nb_epoch=500, verbose=1)
 score = model.evaluate(X_test, y_test, verbose=1)
 
 print(score)
-#nach 500 Epochen acc= 40%
+#nach 500 Epochen acc= 50%
 
