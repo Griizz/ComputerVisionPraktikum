@@ -23,35 +23,37 @@ Labels:
 import glob
 import numpy as np
 from skimage.io import imread
+from os import walk
 
-labels = ["Apple_Green", "Apple_Red", "Banana", "Carambola", "Guava", "Kiwi", "Mango", "Muskmelon", "Orange", "Peach", "Pear", "Persimmon", "Pitaya", "Plum", "Pomegranate", "Tomatoes"]
+#labels = ["Apple_Green", "Apple_Red", "Banana", "Carambola", "Guava", "Kiwi", "Mango", "Muskmelon", "Orange", "Peach", "Pear", "Persimmon", "Pitaya", "Plum", "Pomegranate", "Tomatoes"]
+_, labels, _ = walk("./DataSet").__next__()
 
 #Pfadstrings der Trainingsdaten
 trStrings = []
-for i in range(len(labels)):
-    trStrings.append(glob.glob("./DataSet/" + labels[i] + "/Training/*.png"))
+for label in labels:
+    trStrings += glob.glob("./DataSet/" + label + "/Training/*.png")
 
 #Labels der Trainingsdaten
 trLabels = []
 for i in range(len(labels)):
-    trLabels.append([i] * 800)
+    trLabels += [i] * 800
 
 #Pfadstrings der Testdaten
 testStrings = []
-for i in range(len(labels)):
-    testStrings.append(glob.glob("./DataSet/" + labels[i] + "/Test/*.png"))
+for label in labels:
+    testStrings += glob.glob("./DataSet/" + label + "/Test/*.png")
 
 #Labels der Testdaten
 testLabels = []
 for i in range(len(labels)):
-    testLabels.append([i] * 200)
+    testLabels += [i] * 200
 
 
 #Einlesen der Bilder
 trImgs = []
-for i in range(len(trStrings)):
-    trImgs.append(imread(trStrings[i]))
+for path in trStrings:
+    trImgs.append(imread(path))
 
 testImgs = []
-for i in range(len(testStrings)):
-    testImgs.append(imread(testStrings[i]))
+for path in testStrings:
+    testImgs.append(imread(path))
