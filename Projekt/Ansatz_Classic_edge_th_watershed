@@ -1,0 +1,64 @@
+import cv2 as cv
+import numpy as np
+from skimage.filters import sobel_h, sobel_v
+
+
+image = cv.imread("./DataSet/Apple_Green/Training/Apple_Green_112.png")
+gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
+
+
+img_R = image[:,:,0]
+img_G = image[:,:,1]
+img_B = image[:,:,2]
+
+# Kanten laplacian und sobel
+
+laplacian = cv.Laplacian(gray,cv.CV_64F)
+
+img_vertical = sobel_v(gray, mask = None)
+img_horizontal = sobel_h(gray, mask = None)
+img_Sum = np.sqrt(((img_vertical)**2)+((img_horizontal)**2))
+
+# Threshold adaptive mit gauss/mean, für alle channels und grau
+th_mean_grey = cv.adaptiveThreshold(gray,255,cv.ADAPTIVE_THRESH_MEAN_C, cv.THRESH_BINARY,11,2)
+
+th_mean_img_R = cv.adaptiveThreshold(img_R,255,cv.ADAPTIVE_THRESH_MEAN_C, cv.THRESH_BINARY,11,2)
+th_gauss_img_R = cv.adaptiveThreshold(img_R,255,cv.ADAPTIVE_THRESH_GAUSSIAN_C,  cv.THRESH_BINARY,11,2)
+
+th_mean_img_G = cv.adaptiveThreshold(img_G,255,cv.ADAPTIVE_THRESH_MEAN_C, cv.THRESH_BINARY,11,2)
+th_gauss_img_G = cv.adaptiveThreshold(img_G,255,cv.ADAPTIVE_THRESH_GAUSSIAN_C,  cv.THRESH_BINARY,11,2)
+
+th_mean_img_B = cv.adaptiveThreshold(img_B,255,cv.ADAPTIVE_THRESH_MEAN_C, cv.THRESH_BINARY,11,2)
+th_gauss_img_B = cv.adaptiveThreshold(img_B,255,cv.ADAPTIVE_THRESH_GAUSSIAN_C,  cv.THRESH_BINARY,11,2)
+
+# inv der binärbilder exemplarisch
+
+th2_inv = np.invert(th_mean_img_R)
+th3_inv = np.invert(th_gauss_img_R)
+
+#watershed algo
+
+kernel = np.ones((3,3),np.uint8)
+opening = cv.morphologyEx(th_mean_grey,cv.MORPH_OPEN,kernel, iterations = 3)
+
+# sure background area
+sure_bg = cv.dilate(opening,kernel,iterations=3)
+
+# Finding sure foreground area
+dist_transform = cv.distanceTransform(opening,cv.DIST_L2,5)
+ret, sure_fg = cv.threshold(dist_transform,0.7*dist_transform.max(),255,0)
+
+# Finding unknown region
+sure_fg = np.uint8(sure_fg)
+unknown = cv.subtract(sure_bg,sure_fg)
+
+
+
+cv.imshow('Bild 1 ', gray)
+cv.imshow('Bild 2', unknown)
+
+
+
+cv.waitKey(0)
+cv.destroyAllWindows()
+
