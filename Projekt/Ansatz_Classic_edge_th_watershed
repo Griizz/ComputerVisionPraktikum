@@ -2,6 +2,7 @@ import cv2 as cv
 import numpy as np
 from skimage.filters import sobel_h, sobel_v
 
+# Ideen zur img seg. mit binärbildern. Th, kanten und watershed  funzen nicht wirklich zur segmentierung.  
 
 image = cv.imread("./DataSet/Apple_Green/Training/Apple_Green_112.png")
 gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
@@ -20,6 +21,7 @@ img_horizontal = sobel_h(gray, mask = None)
 img_Sum = np.sqrt(((img_vertical)**2)+((img_horizontal)**2))
 
 # Threshold adaptive mit gauss/mean, für alle channels und grau
+
 th_mean_grey = cv.adaptiveThreshold(gray,255,cv.ADAPTIVE_THRESH_MEAN_C, cv.THRESH_BINARY,11,2)
 
 th_mean_img_R = cv.adaptiveThreshold(img_R,255,cv.ADAPTIVE_THRESH_MEAN_C, cv.THRESH_BINARY,11,2)
@@ -30,6 +32,15 @@ th_gauss_img_G = cv.adaptiveThreshold(img_G,255,cv.ADAPTIVE_THRESH_GAUSSIAN_C,  
 
 th_mean_img_B = cv.adaptiveThreshold(img_B,255,cv.ADAPTIVE_THRESH_MEAN_C, cv.THRESH_BINARY,11,2)
 th_gauss_img_B = cv.adaptiveThreshold(img_B,255,cv.ADAPTIVE_THRESH_GAUSSIAN_C,  cv.THRESH_BINARY,11,2)
+
+# Threshold otsu, für alle channels und grau
+
+
+ret, th_otsu_gray = cv.threshold(gray,127 , 255, cv.THRESH_OTSU)
+ret, th_otsu_r = cv.threshold(img_R,127 , 255, cv.THRESH_OTSU)
+ret, th_otsu_g = cv.threshold(img_G,127 , 255, cv.THRESH_OTSU)
+ret, th_otsu_b = cv.threshold(img_B,127 , 255, cv.THRESH_OTSU)
+
 
 # inv der binärbilder exemplarisch
 
