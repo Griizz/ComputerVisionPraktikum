@@ -40,6 +40,7 @@ ret, th_otsu_gray = cv.threshold(gray,127 , 255, cv.THRESH_OTSU)
 ret, th_otsu_r = cv.threshold(img_R,127 , 255, cv.THRESH_OTSU)
 ret, th_otsu_g = cv.threshold(img_G,127 , 255, cv.THRESH_OTSU)
 ret, th_otsu_b = cv.threshold(img_B,127 , 255, cv.THRESH_OTSU)
+th_mean_img_R = cv.adaptiveThreshold(img_R,255,cv.ADAPTIVE_THRESH_MEAN_C, cv.THRESH_BINARY,11,2)
 
 
 # inv der binärbilder exemplarisch
@@ -65,8 +66,8 @@ unknown = cv.subtract(sure_bg,sure_fg)
 
 
 
-cv.imshow('Bild 1 ', gray)
-cv.imshow('Bild 2', unknown)
+cv.imshow('Bild 1 ', img_Sum)
+cv.imshow('Bild 2', laplacian)
 
 
 
