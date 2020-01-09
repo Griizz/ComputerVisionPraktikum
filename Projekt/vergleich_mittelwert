@@ -1,0 +1,45 @@
+import numpy as np
+
+tr_mean = np.load("./trMittelwerte.npy")
+test_mean = np.load("./testMittelwerte.npy")
+tr_label = np.load("./trLabels.npy")
+test_label = np.load("./testLabels.npy")
+
+
+
+def distanz(tr_mean,test_mean,tr_label,test_label):
+    treffer = 0
+    
+    for x in range(len(tr_mean)):
+    
+        _tr = tr_mean[x, :] # tr mean vektor
+        dist = [256,256,256]  # vektor für distanz zwischen tr und test mean.  
+        match_tr = [0,0,0]    #vektor für die werte der jeweilige farbkanäle 
+        match_test = [0,0,0]
+        match = 0
+        
+        for y in range(len(test_mean)): 
+            _test = test_mean[y,:]  # test rgb mean vektor
+            match_tr = tr_label[x]
+
+            for dim in range(len(_tr)):
+                 comp = np.sqrt((_tr[dim]-_test[dim])**2) #distanz
+                 if comp < dist[dim]:
+                    dist[dim] = comp
+                    match_test[dim] = test_label[y]
+            #wenn mindestenz zwei labels gleich sind ist es ein match
+            
+            if match_test[0] == match_test[1] | match_test[0] == match_test[2]: 
+                match = match_test[0]
+            elif match_test[1] == match_test[0] | match_test[1] == match_test[2]:
+                match = match_test[1]
+            elif match_test[2] == match_test[1] | match_test[2] == match_test[0]:
+                match = match_test[2]
+
+        if match_tr == match:
+            treffer += 1
+    ergebnis = treffer/(len(tr_label))
+
+    return ergebnis
+
+print(distanz(tr_mean,test_mean,tr_label,test_label))
