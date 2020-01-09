@@ -110,3 +110,6 @@ testMittelwerte = berechneMaskierteMittelwerte(testImgs, testMasks)
 np.save('trMittelwerte',trMittelwerte)
 np.save('testMittelwerte', testMittelwerte)
 
+np.save('trLabels',trLabels)
+np.save('testLabels', testLabels)
+
