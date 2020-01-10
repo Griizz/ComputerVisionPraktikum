@@ -32,8 +32,16 @@ def ConfusionMatrix(prediction, validation, labelCount):
 _, labels, _ = walk("./DataSet").__next__()
 
 #Wähle Mittelwert als Deskriptor
-trDesk = np.load('trMittelwerte.npy')
-testDesk = np.load('testMittelwerte.npy')
+#trDesk = np.load('trMittelwerte.npy')
+#testDesk = np.load('testMittelwerte.npy')
+
+#Wähle Mittelwert und Standardabweichung als Deskriptor
+trMittelwerte = np.load('trMittelwerte.npy')
+testMittelwerte = np.load('testMittelwerte.npy')
+trStd = np.load('trStd.npy')
+testStd = np.load('testStd.npy')
+trDesk = np.hstack((trMittelwerte,trStd))
+testDesk = np.hstack((testMittelwerte, testStd))
 
 trLabels = np.load('trLabels.npy')
 testLabels = np.load('testLabels.npy')
