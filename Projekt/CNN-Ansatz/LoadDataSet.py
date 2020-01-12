@@ -24,6 +24,7 @@ import glob
 import numpy as np
 from keras.utils import np_utils
 from skimage.io import imread
+from skimage.transform import resize
 from os import walk
 
 def Load(PATH = "../DataSet/"):
@@ -64,10 +65,14 @@ def Load(PATH = "../DataSet/"):
     #Einlesen der Bilder
     trImgs = []
     for path in trStrings:
-        trImgs.append(imread(path))
+        img = imread(path)
+        img = (resize(img, (256, 256)) * 255).astype(np.uint8)
+        trImgs.append(img)
 
     testImgs = []
     for path in testStrings:
-        testImgs.append(imread(path))
+        img = imread(path)
+        img = (resize(img, (256, 256)) * 255).astype(np.uint8)
+        testImgs.append(img)
 
     return (np.array(trImgs), trLabels, np.array(testImgs), testLabels)
