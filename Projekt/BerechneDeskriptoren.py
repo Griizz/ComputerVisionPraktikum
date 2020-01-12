@@ -57,6 +57,26 @@ def berechneMaskierteMittelwerte(imgs, masks):
         mittelwerte.append(berechneMaskiertenMittelwert(imgs[i], masks[i]))
     return mittelwerte
 
+def erstelle_3d_histo(inputs):
+    _hist_vektor = []
+    for v in inputs:
+        histR = np.histogram(v[:,0], bins=8, range=(0, 256))[0]
+        histG = np.histogram(v[:,1], bins=8, range=(0, 256))[0]
+        histB = np.histogram(v[:,2], bins=8, range=(0, 256))[0]
+        _hist_vektor.append(np.dstack((histR, histG, histB)))
+    return np.asarray(_hist_vektor)
+
+def berechneKanten(imgs,masks):
+    Bildkanten = []
+    for i in range(len(imgs)):
+        gray = cv.cvtColor(imgs[i], cv.COLOR_BGR2GRAY)
+        img_sobel = sobel(gray, mask=None)
+        _img = img_sobel*masks[i]
+        Bildkanten.append(_img)
+        i += 1
+    return np.asarray(Bildkanten)
+
+
 """
 Erstelle aus einem Bild und einer Maske einen Vektor, der ausschließlich die nach der Maske relevanten Pixel des Bildes in einem Vektor speichert.
 Auf diesem Vektor kann danach problemlos np.mean/np.std aufgerufen oder Farbhistogramme berechnet werden
