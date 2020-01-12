@@ -1,26 +1,26 @@
-import numpy as np
 import os
-from tensorflow import random
-import LoadDataSet as lds
 from keras.models import Sequential
 from keras.layers import Dense, Conv2D, MaxPooling2D, Flatten
-from keras.utils import np_utils
 from keras.optimizers import SGD
-from keras.datasets import cifar10
-from keras.callbacks import EarlyStopping, ModelCheckpoint
+from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import wandb
 from wandb.keras import WandbCallback
+
 wandb.init(project="cv_project")
 
+train_datagen = ImageDataGenerator(rescale=1. / 255, horizontal_flip=True)
+val_datagen = ImageDataGenerator(rescale=1. / 255)
 
-(X_train, y_train, X_test, y_test) = lds.Load()
+train_generator = train_datagen.flow_from_directory(
+    '../DataSetNew/Training',
+    target_size=(256, 256),
+    batch_size=32,)
 
-#X_train = X_train.astype('float32')
-#X_test = X_test.astype('float32')
-X_train /= 255
-X_test /= 255
-
-
+validation_generator = val_datagen.flow_from_directory(
+    '../DataSetNew/Validation',
+    target_size=(256, 256),
+    batch_size=32,)
 
 model = Sequential()
 
@@ -30,21 +30,30 @@ model.add(MaxPooling2D(pool_size=(2, 2)))
 model.add(Conv2D(32, (8, 8), activation='relu', padding='same', name='conv3'))
 model.add(Conv2D(32, (8, 8), activation='relu', padding='same', name='conv4'))
 model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Conv2D(32, (8, 8), activation='relu', padding='same', name='conv5'))
+model.add(Conv2D(32, (8, 8), activation='relu', padding='same', name='conv6'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
 model.add(Flatten())
-model.add(Dense(256, activation='relu', name='fc1', ))
+model.add(Dense(1024, activation='relu', name='fc1', ))
 model.add(Dense(16, activation='softmax'))  # Für jedes Label ein output
 
-earlyStopping = EarlyStopping(monitor='val_loss', min_delta=0, patience=3)
 modelCheckpoint = ModelCheckpoint("./Best.h5", monitor='val_loss', verbose=0, save_best_only=True,
                                   save_weights_only=False, mode='auto', period=1)
+
+reduceLROnPlateau = ReduceLROnPlateau(monitor='val_loss', factor=0.0,
+                              patience=5, min_lr=0.001)
 
 model.compile(loss='categorical_crossentropy',
               optimizer=SGD(lr=0.01, momentum=0.9),
               metrics=['accuracy'])
 
-model.fit(X_train, y_train, batch_size=128, nb_epoch=20, validation_split=0.2,
-          callbacks=[earlyStopping, modelCheckpoint, WandbCallback()], verbose=1)
+model.fit_generator(train_generator,
+                    steps_per_epoch=800,  # 16 * 800 / 32 (Num_cat * pics_cat / batchSize)
+                    epochs=50,
+                    validation_data=validation_generator,
+                    validation_steps=75,  # 16 * 150 / 32 (Num_cat * pics_cat / batchSize)
+                    callbacks=[modelCheckpoint, WandbCallback(), reduceLROnPlateau])
+
 
 model.load_weights("./Best.h5", by_name=True)
 model.save(os.path.join(wandb.run.dir, "model.h5"))
-#score = model.evaluate(X_test, y_test, verbose=1)
