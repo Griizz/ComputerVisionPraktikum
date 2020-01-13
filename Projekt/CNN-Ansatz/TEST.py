@@ -37,6 +37,7 @@ model.add(Conv2D(128, (3, 3), activation='relu', padding='same', name='conv3'))
 model.add(MaxPooling2D(pool_size=(2, 2)))
 model.add(Flatten())
 model.add(Dense(256, activation='relu', name='fc1', ))
+model.add(Dense(64, activation='relu', name='fc2', ))
 model.add(Dense(16, activation='softmax'))  # Für jedes Label ein output
 
 modelCheckpoint = ModelCheckpoint("./Best.h5", monitor='val_loss', verbose=0, save_best_only=True,
