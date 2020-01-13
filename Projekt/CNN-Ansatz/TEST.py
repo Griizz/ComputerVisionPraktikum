@@ -2,14 +2,14 @@ import os
 from keras.models import Sequential
 from keras.layers import Dense, Conv2D, MaxPooling2D, Flatten
 from keras.optimizers import SGD
-from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau
+from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, EarlyStopping
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import wandb
 from wandb.keras import WandbCallback
 
 wandb.init(project="cv_project")
 
-train_datagen = ImageDataGenerator(rescale=1. / 255)
+train_datagen = ImageDataGenerator(rescale=1. / 255, horizontal_flip=True)
 val_datagen = ImageDataGenerator(rescale=1. / 255)
 
 train_generator = train_datagen.flow_from_directory(
@@ -17,6 +17,7 @@ train_generator = train_datagen.flow_from_directory(
     target_size=(256, 256),
     color_mode="rgb",
     class_mode="categorical",
+    shuffle=True,
     batch_size=16)
 
 validation_generator = val_datagen.flow_from_directory(
@@ -44,6 +45,8 @@ modelCheckpoint = ModelCheckpoint("./Best.h5", monitor='val_loss', verbose=0, sa
 reduceLROnPlateau = ReduceLROnPlateau(monitor='val_loss', factor=0.25,
                               patience=5, min_lr=0.0005)
 
+earlyStopping = EarlyStopping(patience=10, monitor='val_loss')
+
 model.compile(loss='categorical_crossentropy',
               optimizer=SGD(lr=0.01, momentum=0.9),
               metrics=['accuracy'])
@@ -53,7 +56,7 @@ model.fit_generator(train_generator,
                     epochs=50,
                     validation_data=validation_generator,
                     validation_steps=150,  # 16 * 150 / 16 (Num_cat * pics_cat / batchSize)
-                    callbacks=[modelCheckpoint, WandbCallback(), reduceLROnPlateau])
+                    callbacks=[modelCheckpoint, WandbCallback(), reduceLROnPlateau, earlyStopping])
 
 
 model.load_weights("./Best.h5", by_name=True)
