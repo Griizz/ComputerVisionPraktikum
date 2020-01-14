@@ -36,8 +36,7 @@ model.add(MaxPooling2D(pool_size=(2, 2)))
 model.add(Conv2D(128, (3, 3), activation='relu', padding='same', name='conv3'))
 model.add(MaxPooling2D(pool_size=(2, 2)))
 model.add(Flatten())
-model.add(Dense(256, activation='relu', name='fc1', ))
-model.add(Dense(64, activation='relu', name='fc2', ))
+model.add(Dense(64, activation='relu', name='fc1', ))
 model.add(Dense(16, activation='softmax'))  # Für jedes Label ein output
 
 modelCheckpoint = ModelCheckpoint("./Best.h5", monitor='val_loss', verbose=0, save_best_only=True,
@@ -46,7 +45,7 @@ modelCheckpoint = ModelCheckpoint("./Best.h5", monitor='val_loss', verbose=0, sa
 reduceLROnPlateau = ReduceLROnPlateau(monitor='val_loss', factor=0.25,
                               patience=5, min_lr=0.0005)
 
-earlyStopping = EarlyStopping(patience=10, monitor='val_loss')
+earlyStopping = EarlyStopping(patience=15, monitor='val_loss')
 
 model.compile(loss='categorical_crossentropy',
               optimizer=SGD(lr=0.01, momentum=0.9),
@@ -54,7 +53,7 @@ model.compile(loss='categorical_crossentropy',
 
 model.fit_generator(train_generator,
                     steps_per_epoch=800,  # 16 * 800 / 16 (Num_cat * pics_cat / batchSize)
-                    epochs=50,
+                    epochs=100,
                     validation_data=validation_generator,
                     validation_steps=150,  # 16 * 150 / 16 (Num_cat * pics_cat / batchSize)
                     callbacks=[modelCheckpoint, WandbCallback(), reduceLROnPlateau, earlyStopping])
