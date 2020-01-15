@@ -7,6 +7,8 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import wandb
 from wandb.keras import WandbCallback
 
+BATCHSIZE = 8
+
 wandb.init(project="cv_project")
 
 train_datagen = ImageDataGenerator(rescale=1. / 255, horizontal_flip=True)
@@ -19,21 +21,21 @@ train_generator = train_datagen.flow_from_directory(
     color_mode="rgb",
     class_mode="categorical",
     shuffle=True,
-    batch_size=16)
+    batch_size= BATCHSIZE)
 
 validation_generator = val_datagen.flow_from_directory(
     '../DataSetNew/Validation',
     target_size=(256, 256),
     color_mode="rgb",
     class_mode="categorical",
-    batch_size=16)
+    batch_size= BATCHSIZE)
 
 test_generator = test_datagen.flow_from_directory(
     '../DataSetNew/Test',
     target_size=(256, 256),
     color_mode="rgb",
     class_mode="categorical",
-    batch_size=16)
+    batch_size= BATCHSIZE)
 
 model = Sequential()
 
@@ -47,11 +49,17 @@ model.add(Flatten())
 model.add(Dense(256, activation='relu', name='fc1', ))
 model.add(Dense(16, activation='softmax'))  # Für jedes Label ein output
 
-modelCheckpoint = ModelCheckpoint("./Best.h5", monitor='val_loss', verbose=0, save_best_only=True,
-                                  save_weights_only=False, mode='auto', period=1)
+modelCheckpoint = ModelCheckpoint("./Best1.h5", monitor='val_loss',
+                                  verbose=0,
+                                  save_best_only=True,
+                                  save_weights_only=False,
+                                  mode='auto',
+                                  period=1)
 
-reduceLROnPlateau = ReduceLROnPlateau(monitor='val_loss', factor=0.25,
-                              patience=5, min_lr=0.0005)
+reduceLROnPlateau = ReduceLROnPlateau(monitor='val_loss',
+                                      factor=0.25,
+                                      patience=5,
+                                      min_lr=0.0005)
 
 earlyStopping = EarlyStopping(patience=15, monitor='val_loss')
 
@@ -60,14 +68,16 @@ model.compile(loss='categorical_crossentropy',
               metrics=['accuracy'])
 
 model.fit_generator(train_generator,
-                    steps_per_epoch=800,  # 16 * 800 / 16 (Num_cat * pics_cat / batchSize)
+                    steps_per_epoch=16 * 800 // BATCHSIZE,  # (Num_cat * pics_cat / batchSize)
                     epochs=100,
                     validation_data=validation_generator,
-                    validation_steps=150,  # 16 * 150 / 16 (Num_cat * pics_cat / batchSize)
+                    validation_steps=16 * 150 // BATCHSIZE,  # (Num_cat * pics_cat / batchSize)
                     callbacks=[modelCheckpoint, WandbCallback(), reduceLROnPlateau, earlyStopping])
 
 
-model.load_weights("./Best.h5", by_name=True)
+model.load_weights("./Best1.h5", by_name=True)
 model.save(os.path.join(wandb.run.dir, "model.h5"))
 
-model.evaluate_generator(test_generator, callbacks=WandbCallback())
+model.evaluate_generator(test_generator,
+                         callbacks=WandbCallback(),
+                         steps=16 * 50 // BATCHSIZE)  # (Num_cat * pics_cat / batchSize)
