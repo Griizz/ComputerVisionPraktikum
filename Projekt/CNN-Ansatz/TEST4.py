@@ -21,21 +21,21 @@ train_generator = train_datagen.flow_from_directory(
     color_mode="rgb",
     class_mode="categorical",
     shuffle=True,
-    batch_size=16)
+    batch_size=BATCHSIZE)
 
 validation_generator = val_datagen.flow_from_directory(
     '../DataSetNew/Validation',
     target_size=(256, 256),
     color_mode="rgb",
     class_mode="categorical",
-    batch_size=16)
+    batch_size=BATCHSIZE)
 
 test_generator = test_datagen.flow_from_directory(
     '../DataSetNew/Test',
     target_size=(256, 256),
     color_mode="rgb",
     class_mode="categorical",
-    batch_size=16)
+    batch_size=BATCHSIZE)
 
 model = Sequential()
 
