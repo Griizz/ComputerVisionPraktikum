@@ -11,6 +11,7 @@ wandb.init(project="cv_project")
 
 train_datagen = ImageDataGenerator(rescale=1. / 255, horizontal_flip=True)
 val_datagen = ImageDataGenerator(rescale=1. / 255)
+test_datagen = ImageDataGenerator(rescale=1. / 255)
 
 train_generator = train_datagen.flow_from_directory(
     '../DataSetNew/Training',
@@ -22,6 +23,13 @@ train_generator = train_datagen.flow_from_directory(
 
 validation_generator = val_datagen.flow_from_directory(
     '../DataSetNew/Validation',
+    target_size=(256, 256),
+    color_mode="rgb",
+    class_mode="categorical",
+    batch_size=16)
+
+test_generator = test_datagen.flow_from_directory(
+    '../DataSetNew/Test',
     target_size=(256, 256),
     color_mode="rgb",
     class_mode="categorical",
@@ -67,3 +75,5 @@ model.fit_generator(train_generator,
 
 model.load_weights("./Best.h5", by_name=True)
 model.save(os.path.join(wandb.run.dir, "model.h5"))
+
+model.evaluate_generator(test_generator, callbacks=WandbCallback())
