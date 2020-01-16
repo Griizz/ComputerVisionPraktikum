@@ -83,7 +83,7 @@ def berechneKanten(imgs,masks):
         img_sobel = sobel(gray, mask=None)
         _img = img_sobel*masks[i]
         Bildkanten.append(_img)
-        i += 1
+        
     return np.asarray(Bildkanten)
 """
 Falls ein Pixel den Wert 0 hat wird er auf 1 gesetzt und anschließend wird das Bild maskiert.
