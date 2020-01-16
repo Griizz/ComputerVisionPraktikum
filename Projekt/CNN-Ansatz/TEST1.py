@@ -8,6 +8,7 @@ import wandb
 from wandb.keras import WandbCallback
 
 BATCHSIZE = 8
+LR = 0.01 / 16 * BATCHSIZE
 
 wandb.init(project="cv_project")
 
@@ -64,7 +65,7 @@ reduceLROnPlateau = ReduceLROnPlateau(monitor='val_loss',
 earlyStopping = EarlyStopping(patience=15, monitor='val_loss')
 
 model.compile(loss='categorical_crossentropy',
-              optimizer=SGD(lr=0.01, momentum=0.9),
+              optimizer=SGD(lr=LR, momentum=0.9),
               metrics=['accuracy'])
 
 model.fit_generator(train_generator,
