@@ -57,14 +57,24 @@ def berechneMaskierteMittelwerte(imgs, masks):
         mittelwerte.append(berechneMaskiertenMittelwert(imgs[i], masks[i]))
     return mittelwerte
 
-def erstelle_3d_histo(inputs):
+def erstelle_1d_histo(imgs):
     _hist_vektor = []
-    for v in inputs:
-        histR = np.histogram(v[:,0], bins=8, range=(0, 256))[0]
-        histG = np.histogram(v[:,1], bins=8, range=(0, 256))[0]
-        histB = np.histogram(v[:,2], bins=8, range=(0, 256))[0]
+    for img in imgs:
+        histR = np.histogram(img[:,0], bins=8, range=(0, 256))[0]
+        histG = np.histogram(img[:,1], bins=8, range=(0, 256))[0]
+        histB = np.histogram(img[:,2], bins=8, range=(0, 256))[0]
         _hist_vektor.append(np.dstack((histR, histG, histB)))
     return np.asarray(_hist_vektor)
+"""
+Hier ist bei der range die 0 nicht berücksichtigt weil bei den input Bildern nur die Pixel den Wert 0 haben die durch die Maske entfernt wurden.
+"""
+def erstelle_3d_histo(imgs):
+    _hist3d = []
+    for i in range(len(imgs)):
+
+        _hist3d.append(np.histogramdd(imgs[i].reshape((imgs[i].shape[0]*imgs[i].shape[1],3)), bins = [8,8,8], range=((1,256),(1,256),(1,256)))[0])
+
+    return np.asarray(_hist3d)
 
 def berechneKanten(imgs,masks):
     Bildkanten = []
@@ -75,7 +85,34 @@ def berechneKanten(imgs,masks):
         Bildkanten.append(_img)
         i += 1
     return np.asarray(Bildkanten)
+"""
+Falls ein Pixel den Wert 0 hat wird er auf 1 gesetzt und anschließend wird das Bild maskiert.
+"""
+def entferneNull(imgs):
+    img_noNull = []
+    for img in imgs:
+        imgS = rgb2hsv(img)[:, :, 1]
+        for x in range(len(img[:, 0, 0])):
+            for y in range(len(img[0, :, 0])):
+                pixel_r = img[x, y, 0]
+                pixel_g = img[x, y, 1]
+                pixel_b = img[x, y, 2]
+                if pixel_r == 0:
+                    img[x, y, 0] = 1
+                elif pixel_g == 0:
+                    img[x, y, 1] = 1
+                elif pixel_b == 0:
+                    img[x, y, 2] = 1
+        mask = (imgS > threshold_otsu(imgS))
+        cropt = img * mask[:, :, None]
+        img_noNull.append(cropt)
+    return img_noNull
 
+
+tr_mBilder = entferneNull(trImgs)
+tr_hist_noNull = erstelle_3d_histo(tr_mBilder)
+test_mBilder = entferneNull(testImgs)
+test_hist_noNull = erstelle_3d_histo(test_mBilder)
 
 """
 Erstelle aus einem Bild und einer Maske einen Vektor, der ausschließlich die nach der Maske relevanten Pixel des Bildes in einem Vektor speichert.
