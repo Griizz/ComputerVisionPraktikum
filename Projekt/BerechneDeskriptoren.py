@@ -27,6 +27,8 @@ from os import walk
 from skimage.color import rgb2hsv
 from skimage.filters import threshold_otsu
 
+ANZAHLPIXEL = 320 * 258
+
 """
 Gibt bei einer Liste von Bildern entsprechende Masken aus, die nach dem Otsu-Verfahren auf den Saturation-Dimensionen (HSV) maskiert.
 """
@@ -56,6 +58,24 @@ def berechneMaskierteMittelwerte(imgs, masks):
     for i in range(len(imgs)):
         mittelwerte.append(berechneMaskiertenMittelwert(imgs[i], masks[i]))
     return mittelwerte
+"""
+erwartet vektor als eingabe
+"""
+def erstelle_1d_histos_gewichtet(imgs):
+    i = 0
+    _hist_vektor = []
+    for img in imgs:
+        histR = np.histogram(img[:,0], bins=8, range=(0, 256))[0]
+        histG = np.histogram(img[:,1], bins=8, range=(0, 256))[0]
+        histB = np.histogram(img[:,2], bins=8, range=(0, 256))[0]
+        histR = histR * (ANZAHLPIXEL/len(img))
+        histG = histG * (ANZAHLPIXEL/len(img))
+        histB = histB * (ANZAHLPIXEL/len(img))
+        _hist_vektor.append(np.hstack((histR, histG, histB)))
+        print(i)
+        i += 1
+    return np.asarray(_hist_vektor)
+
 
 def erstelle_1d_histo(imgs):
     _hist_vektor = []
@@ -65,6 +85,31 @@ def erstelle_1d_histo(imgs):
         histB = np.histogram(img[:,2], bins=8, range=(0, 256))[0]
         _hist_vektor.append(np.dstack((histR, histG, histB)))
     return np.asarray(_hist_vektor)
+
+
+"""
+Hier wir die Vektorfkt benutzt um die maskierten Stellen zu entfernen
+"""
+def erstelle_3d_histos_gewichtet(imgs):
+    _hist3d = []
+    for img in imgs:
+
+        _hist3d.append(np.histogramdd(img, bins = [8,8,8], range=((0,256),(0,256),(0,256)))[0]*ANZAHLPIXEL/len(img))
+
+    return np.asarray(_hist3d)
+
+
+"""
+Hier wir die Vektorfkt benutzt um die maskierten Stellen zu entfernen
+"""
+def erstelle_3d_histos_mit_vektor(imgs):
+    _hist3d = []
+    for img in imgs:
+
+        _hist3d.append(np.histogramdd(img, bins = [8,8,8], range=((0,256),(0,256),(0,256)))[0])
+
+    return np.asarray(_hist3d)
+
 """
 Hier ist bei der range die 0 nicht berücksichtigt weil bei den input Bildern nur die Pixel den Wert 0 haben die durch die Maske entfernt wurden.
 """
@@ -109,10 +154,10 @@ def entferneNull(imgs):
     return img_noNull
 
 
-tr_mBilder = entferneNull(trImgs)
-tr_hist_noNull = erstelle_3d_histo(tr_mBilder)
-test_mBilder = entferneNull(testImgs)
-test_hist_noNull = erstelle_3d_histo(test_mBilder)
+#tr_mBilder = entferneNull(trImgs)
+#tr_hist_noNull = erstelle_3d_histo(tr_mBilder)
+#test_mBilder = entferneNull(testImgs)
+#test_hist_noNull = erstelle_3d_histo(test_mBilder)
 
 """
 Erstelle aus einem Bild und einer Maske einen Vektor, der ausschließlich die nach der Maske relevanten Pixel des Bildes in einem Vektor speichert.
@@ -152,60 +197,73 @@ def erstelleVektoren(imgs, masks):
 #mittelwerteB.append(np.mean(vektoren[1], axis = 0))
 #print(mittelwerteA)
 #print(mittelwerteB)
+#histos1d = erstelle_1d_histos_gewichtet(vektoren)
+#print(histos1d)
+#histos3d = erstelle_3d_histos_mit_vektor(vektoren)
+#print(histos3d)
+
 
 #labels = ["Apple_Green", "Apple_Red", "Banana", "Carambola", "Guava", "Kiwi", "Mango", "Muskmelon", "Orange", "Peach", "Pear", "Persimmon", "Pitaya", "Plum", "Pomegranate", "Tomatoes"]
-_, labels, _ = walk("./DataSet").__next__()
+#_, labels, _ = walk("./DataSet").__next__()
 
 #Pfadstrings der Trainingsdaten
-trStrings = []
-for label in labels:
-    trStrings += glob.glob("./DataSet/" + label + "/Training/*.png")
+#trStrings = []
+#for label in labels:
+#    trStrings += glob.glob("./DataSet/" + label + "/Training/*.png")
 
 #Labels der Trainingsdaten
-trLabels = []
-for i in range(len(labels)):
-    trLabels += [i] * 800
+#trLabels = []
+#for i in range(len(labels)):
+#    trLabels += [i] * 800
 
 #Pfadstrings der Testdaten
-testStrings = []
-for label in labels:
-    testStrings += glob.glob("./DataSet/" + label + "/Test/*.png")
+#testStrings = []
+#for label in labels:
+#    testStrings += glob.glob("./DataSet/" + label + "/Test/*.png")
 
 #Labels der Testdaten
-testLabels = []
-for i in range(len(labels)):
-    testLabels += [i] * 200
+#testLabels = []
+#for i in range(len(labels)):
+#    testLabels += [i] * 200
 
-print('Einlesen der Bilder:')
+#print('Einlesen der Bilder:')
 
 #Einlesen der Bilder
-i = 0
-trImgs = []
-for path in trStrings:
-    trImgs.append(imread(path))
-    print(i)
-    i += 1
+#i = 0
+#trImgs = []
+#for path in trStrings:
+#    trImgs.append(imread(path))
+#    print(i)
+#    i += 1
 
-print('Einlesen der TestBilder:')
-i=0
-testImgs = []
-for path in testStrings:
-    testImgs.append(imread(path))
-    print(i)
-    i += 1
+#print('Einlesen der TestBilder:')
+#i=0
+#testImgs = []
+#for path in testStrings:
+#    testImgs.append(imread(path))
+#    print(i)
+#    i += 1
 
-print('Erstelle Masken:')
-trMasks = createSMasks(trImgs)
-print('Erstelle TestMasken:')
-testMasks = createSMasks(testImgs)
+#print('Erstelle Masken:')
+#trMasks = createSMasks(trImgs)
+#print('Erstelle TestMasken:')
+#testMasks = createSMasks(testImgs)
 
 
 #Vektoren berechnen:
 
-print('Erstelle Vektoren:')
-trVektoren = erstelleVektoren(trImgs, trMasks)
-print('Erstelle TestVektoren:')
-testVektoren = erstelleVektoren(testImgs, testMasks)
+#print('Erstelle Vektoren:')
+#trVektoren = erstelleVektoren(trImgs, trMasks)
+#print('Erstelle TestVektoren:')
+#testVektoren = erstelleVektoren(testImgs, testMasks)
+
+#np.save('trVektoren', trVektoren)
+#np.save('testVektoren', testVektoren)
+
+
+#Vektoren laden:
+trVektoren = np.load('trVektoren.npy',allow_pickle= True)
+testVektoren = np.load('testVektoren.npy', allow_pickle= True)
 
 #Mittelwerte berechnen:
 
@@ -227,18 +285,48 @@ testVektoren = erstelleVektoren(testImgs, testMasks)
 
 #Standardabweichungen berechnen:
 
-trStd = []
-for i in range(len(trImgs)):
-    trStd.append(np.std(trVektoren[i], axis=0))
-    print(i)
+#trStd = []
+#for i in range(len(trImgs)):
+#    trStd.append(np.std(trVektoren[i], axis=0))
+#    print(i)
 
-testStd = []
-for i in range(len(testImgs)):
-    testStd.append(np.std(testVektoren[i], axis=0))
-    print(i)
+#testStd = []
+#for i in range(len(testImgs)):
+#    testStd.append(np.std(testVektoren[i], axis=0))
+#    print(i)
 
-np.save('trStd', trStd)
-np.save('testStd', testStd)
+#np.save('trStd', trStd)
+#np.save('testStd', testStd)
+
+
+#1D Histos gewichtet berechnen:
+
+#print("Erstelle 1D Histos Training:")
+#tr1DHistosGewichtet = erstelle_1d_histos_gewichtet(trVektoren)
+#print("Erstelle 1D Histos Test:")
+#test1DHistosGewichtet = erstelle_1d_histos_gewichtet(testVektoren)
+
+#np.save('tr1DHistosGewichtet', tr1DHistosGewichtet)
+#np.save('test1DHistosGewichtet', test1DHistosGewichtet)
+
+
+#3D Histos:
+print("Erstelle 3D Histos Training:")
+tr3DHistos = erstelle_3d_histos_mit_vektor(trVektoren)
+print("Erstelle 3D Histos Test:")
+test3DHistos = erstelle_3d_histos_mit_vektor(testVektoren)
+
+np.save('tr3DHistos', tr3DHistos)
+np.save('test3DHistos', test3DHistos)
+
+#3D Histos gewichtet:
+#print("Erstelle 3D Histos Training:")
+#tr3DHistosGewichtet = erstelle_3d_histos_gewichtet(trVektoren)
+#print("Erstelle 3D Histos Test:")
+#test3DHistosGewichtet = erstelle_3d_histos_gewichtet(testVektoren)
+
+#np.save('tr3DHistosGewichtet', tr3DHistosGewichtet)
+#np.save('test3DHistosGewichtet', test3DHistosGewichtet)
 
 #np.save('trLabels',trLabels)
 #np.save('testLabels', testLabels)

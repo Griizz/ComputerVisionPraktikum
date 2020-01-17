@@ -36,12 +36,20 @@ _, labels, _ = walk("./DataSet").__next__()
 #testDesk = np.load('testMittelwerte.npy')
 
 #Wähle Mittelwert und Standardabweichung als Deskriptor
-trMittelwerte = np.load('trMittelwerte.npy')
-testMittelwerte = np.load('testMittelwerte.npy')
-trStd = np.load('trStd.npy')
-testStd = np.load('testStd.npy')
-trDesk = np.hstack((trMittelwerte,trStd))
-testDesk = np.hstack((testMittelwerte, testStd))
+#trMittelwerte = np.load('trMittelwerte.npy')
+#testMittelwerte = np.load('testMittelwerte.npy')
+#trStd = np.load('trStd.npy')
+#testStd = np.load('testStd.npy')
+#trDesk = np.hstack((trMittelwerte,trStd))
+#testDesk = np.hstack((testMittelwerte, testStd))
+
+#Wähle 1D Histos gewichtet als Deskriptor:
+#trDesk = np.load('tr1DHistosGewichtet.npy')
+#testDesk = np.load('test1DHistosGewichtet.npy')
+
+#Wähle 3D Histos als Deskriptor:
+trDesk = np.load('tr3DHistos.npy')
+testDesk = np.load('test3DHistos.npy')
 
 trLabels = np.load('trLabels.npy')
 testLabels = np.load('testLabels.npy')
