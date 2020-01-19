@@ -41,13 +41,8 @@ test_generator = test_datagen.flow_from_directory(
 model = Sequential()
 
 model.add(Conv2D(32, (3, 3), activation='relu', padding='same', name='conv1.1', input_shape=(256, 256, 3)))
-model.add(Conv2D(32, (3, 3), activation='relu', padding='same', name='conv1.2', input_shape=(256, 256, 3)))
 model.add(MaxPooling2D(pool_size=(2, 2)))
 model.add(Conv2D(64, (3, 3), activation='relu', padding='same', name='conv2.1'))
-model.add(Conv2D(64, (3, 3), activation='relu', padding='same', name='conv2.2'))
-model.add(MaxPooling2D(pool_size=(2, 2)))
-model.add(Conv2D(128, (3, 3), activation='relu', padding='same', name='conv3.1'))
-model.add(Conv2D(128, (3, 3), activation='relu', padding='same', name='conv3.2'))
 model.add(MaxPooling2D(pool_size=(2, 2)))
 model.add(Flatten())
 model.add(Dense(256, activation='relu', name='fc1', ))
@@ -84,5 +79,4 @@ model.load_weights("./Best2.h5", by_name=True)
 model.save(os.path.join(wandb.run.dir, "model.h5"))
 
 model.evaluate_generator(test_generator,
-                         callbacks=WandbCallback(),
                          steps=16 * 50 // BATCHSIZE)  # (Num_cat * pics_cat / batchSize)
