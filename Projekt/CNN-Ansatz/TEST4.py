@@ -48,6 +48,12 @@ model.add(Conv2D(128, (3, 3), activation='relu', padding='same', name='conv3.1')
 model.add(MaxPooling2D(pool_size=(2, 2)))
 model.add(Conv2D(256, (3, 3), activation='relu', padding='same', name='conv4.1'))
 model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Conv2D(512, (3, 3), activation='relu', padding='same', name='conv5.1'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Conv2D(1024, (3, 3), activation='relu', padding='same', name='conv6.1'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Conv2D(2048, (3, 3), activation='relu', padding='same', name='conv7.1'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
 model.add(Flatten())
 model.add(Dense(256, activation='relu', name='fc1', ))
 model.add(Dense(16, activation='softmax'))  # Für jedes Label ein output
@@ -75,5 +81,7 @@ model.fit_generator(train_generator,
 model.load_weights("./Best4.h5", by_name=True)
 model.save(os.path.join(wandb.run.dir, "model.h5"))
 
-model.evaluate_generator(test_generator,
+test_accuracy = model.evaluate_generator(test_generator,
                          steps=16 * 50 // BATCHSIZE)  # (Num_cat * pics_cat / batchSize)
+
+wandb.run.summary["test_accuracy"] = test_accuracy[1]

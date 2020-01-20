@@ -40,23 +40,23 @@ test_generator = test_datagen.flow_from_directory(
 
 model = Sequential()
 
-model.add(Conv2D(32, (3, 3), activation='relu', padding='same', name='conv1', input_shape=(256, 256, 3)))
+model.add(Conv2D(32, (3, 3), activation='relu', padding='same', name='conv1.1', input_shape=(256, 256, 3)))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Conv2D(64, (3, 3), activation='relu', padding='same', name='conv2.1'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Conv2D(128, (3, 3), activation='relu', padding='same', name='conv3.1'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Conv2D(256, (3, 3), activation='relu', padding='same', name='conv4.1'))
 model.add(MaxPooling2D(pool_size=(2, 2)))
 model.add(Flatten())
 model.add(Dense(256, activation='relu', name='fc1', ))
 model.add(Dense(16, activation='softmax'))  # Für jedes Label ein output
 
-modelCheckpoint = ModelCheckpoint("./Best1.h5", monitor='val_loss',
-                                  verbose=0,
-                                  save_best_only=True,
-                                  save_weights_only=False,
-                                  mode='auto',
-                                  period=1)
+modelCheckpoint = ModelCheckpoint("./Best4.h5", monitor='val_loss', verbose=0, save_best_only=True,
+                                  save_weights_only=False, mode='auto', period=1)
 
-reduceLROnPlateau = ReduceLROnPlateau(monitor='val_loss',
-                                      factor=0.25,
-                                      patience=5,
-                                      min_lr=0.0005)
+reduceLROnPlateau = ReduceLROnPlateau(monitor='val_loss', factor=0.25,
+                              patience=5, min_lr=0.0005)
 
 earlyStopping = EarlyStopping(patience=15, monitor='val_loss')
 
@@ -68,12 +68,14 @@ model.fit_generator(train_generator,
                     steps_per_epoch=16 * 800 // BATCHSIZE,  # (Num_cat * pics_cat / batchSize)
                     epochs=100,
                     validation_data=validation_generator,
-                    validation_steps=16 * 150 // BATCHSIZE,  # (Num_cat * pics_cat / batchSize)
+                    validation_steps=16 * 150 // BATCHSIZE,
                     callbacks=[modelCheckpoint, WandbCallback(), reduceLROnPlateau, earlyStopping])
 
 
-model.load_weights("./Best1.h5", by_name=True)
+model.load_weights("./Best4.h5", by_name=True)
 model.save(os.path.join(wandb.run.dir, "model.h5"))
 
-model.evaluate_generator(test_generator,
+test_accuracy = model.evaluate_generator(test_generator,
                          steps=16 * 50 // BATCHSIZE)  # (Num_cat * pics_cat / batchSize)
+
+wandb.run.summary["test_accuracy"] = test_accuracy[1]
