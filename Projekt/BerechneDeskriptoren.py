@@ -204,45 +204,45 @@ def erstelleVektoren(imgs, masks):
 
 
 #labels = ["Apple_Green", "Apple_Red", "Banana", "Carambola", "Guava", "Kiwi", "Mango", "Muskmelon", "Orange", "Peach", "Pear", "Persimmon", "Pitaya", "Plum", "Pomegranate", "Tomatoes"]
-#_, labels, _ = walk("./DataSet").__next__()
+_, labels, _ = walk("./DataSet").__next__()
 
 #Pfadstrings der Trainingsdaten
-#trStrings = []
-#for label in labels:
-#    trStrings += glob.glob("./DataSet/" + label + "/Training/*.png")
+trStrings = []
+for label in labels:
+    trStrings += glob.glob("./DataSet/" + label + "/Training/*.png")
 
 #Labels der Trainingsdaten
-#trLabels = []
-#for i in range(len(labels)):
-#    trLabels += [i] * 800
+trLabels = []
+for i in range(len(labels)):
+    trLabels += [i] * 800
 
 #Pfadstrings der Testdaten
-#testStrings = []
-#for label in labels:
-#    testStrings += glob.glob("./DataSet/" + label + "/Test/*.png")
+testStrings = []
+for label in labels:
+    testStrings += glob.glob("./DataSet/" + label + "/Test/*.png")
 
 #Labels der Testdaten
-#testLabels = []
-#for i in range(len(labels)):
-#    testLabels += [i] * 200
+testLabels = []
+for i in range(len(labels)):
+    testLabels += [i] * 200
 
-#print('Einlesen der Bilder:')
+print('Einlesen der Bilder:')
 
 #Einlesen der Bilder
-#i = 0
-#trImgs = []
-#for path in trStrings:
-#    trImgs.append(imread(path))
-#    print(i)
-#    i += 1
+i = 0
+trImgs = []
+for path in trStrings:
+    trImgs.append(imread(path))
+    print(i)
+    i += 1
 
-#print('Einlesen der TestBilder:')
-#i=0
-#testImgs = []
-#for path in testStrings:
-#    testImgs.append(imread(path))
-#    print(i)
-#    i += 1
+print('Einlesen der TestBilder:')
+i=0
+testImgs = []
+for path in testStrings:
+    testImgs.append(imread(path))
+    print(i)
+    i += 1
 
 #print('Erstelle Masken:')
 #trMasks = createSMasks(trImgs)
@@ -262,10 +262,21 @@ def erstelleVektoren(imgs, masks):
 
 
 #Vektoren laden:
-trVektoren = np.load('trVektoren.npy',allow_pickle= True)
-testVektoren = np.load('testVektoren.npy', allow_pickle= True)
+#trVektoren = np.load('trVektoren.npy',allow_pickle= True)
+#testVektoren = np.load('testVektoren.npy', allow_pickle= True)
 
 #Mittelwerte berechnen:
+
+#nicht maskiert:
+trMittelwerte = []
+for i in range(len(trImgs)):
+    trMittelwerte.append(np.mean(trImgs[i], axis = (0,1)))
+testMittelwerte = []
+for i in range(len(testImgs)):
+    testMittelwerte.append(np.mean(testImgs[i], axis = (0,1)))
+
+np.save('trMittelwerteDumm', trMittelwerte)
+np.save('testMittelwerteDumm',testMittelwerte)
 
 #mit berechneMittelwert:
 #trMittelwerte = berechneMaskierteMittelwerte(trImgs, trMasks)
@@ -311,13 +322,13 @@ testVektoren = np.load('testVektoren.npy', allow_pickle= True)
 
 
 #3D Histos:
-print("Erstelle 3D Histos Training:")
-tr3DHistos = erstelle_3d_histos_mit_vektor(trVektoren)
-print("Erstelle 3D Histos Test:")
-test3DHistos = erstelle_3d_histos_mit_vektor(testVektoren)
+#print("Erstelle 3D Histos Training:")
+#tr3DHistos = erstelle_3d_histos_mit_vektor(trVektoren)
+#print("Erstelle 3D Histos Test:")
+#test3DHistos = erstelle_3d_histos_mit_vektor(testVektoren)
 
-np.save('tr3DHistos', tr3DHistos)
-np.save('test3DHistos', test3DHistos)
+#np.save('tr3DHistos', tr3DHistos)
+#np.save('test3DHistos', test3DHistos)
 
 #3D Histos gewichtet:
 #print("Erstelle 3D Histos Training:")
