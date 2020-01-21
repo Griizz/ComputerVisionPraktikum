@@ -9,6 +9,7 @@ from wandb.keras import WandbCallback
 
 BATCHSIZE = 8
 LR = 0.01 / 16 * BATCHSIZE
+FILEPATH = "./Best4.h5"
 
 wandb.init(project="cv_project")
 
@@ -54,11 +55,15 @@ model.add(Conv2D(1024, (3, 3), activation='relu', padding='same', name='conv6.1'
 model.add(MaxPooling2D(pool_size=(2, 2)))
 model.add(Conv2D(2048, (3, 3), activation='relu', padding='same', name='conv7.1'))
 model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Conv2D(4096, (3, 3), activation='relu', padding='same', name='conv8.1'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Conv2D(8192, (3, 3), activation='relu', padding='same', name='conv9.1'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
 model.add(Flatten())
 model.add(Dense(256, activation='relu', name='fc1', ))
 model.add(Dense(16, activation='softmax'))  # Für jedes Label ein output
 
-modelCheckpoint = ModelCheckpoint("./Best4.h5", monitor='val_loss', verbose=0, save_best_only=True,
+modelCheckpoint = ModelCheckpoint(FILEPATH, monitor='val_loss', verbose=0, save_best_only=True,
                                   save_weights_only=False, mode='auto', period=1)
 
 reduceLROnPlateau = ReduceLROnPlateau(monitor='val_loss', factor=0.25,
@@ -78,7 +83,7 @@ model.fit_generator(train_generator,
                     callbacks=[modelCheckpoint, WandbCallback(), reduceLROnPlateau, earlyStopping])
 
 
-model.load_weights("./Best4.h5", by_name=True)
+model.load_weights(FILEPATH, by_name=True)
 model.save(os.path.join(wandb.run.dir, "model.h5"))
 
 test_accuracy = model.evaluate_generator(test_generator,
