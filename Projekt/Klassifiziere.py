@@ -64,17 +64,21 @@ def ConfusionMatrix(prediction, validation, labelCount):
 
 _, labels, _ = walk("./DataSet").__next__()
 
+#Mittelwert Dumm als Deskriptor
+trDesk = np.load('trMittelwerteDumm.npy')
+testDesk = np.load('testMittelwerteDumm.npy')
+
 #Wähle Mittelwert als Deskriptor
 #trDesk = np.load('trMittelwerte.npy')
 #testDesk = np.load('testMittelwerte.npy')
 
 #Wähle Mittelwert und Standardabweichung als Deskriptor
-trMittelwerte = np.load('trMittelwerte.npy')
-testMittelwerte = np.load('testMittelwerte.npy')
-trStd = np.load('trStd.npy')
-testStd = np.load('testStd.npy')
-trDesk = np.hstack((trMittelwerte,trStd))
-testDesk = np.hstack((testMittelwerte, testStd))
+#trMittelwerte = np.load('trMittelwerte.npy')
+#testMittelwerte = np.load('testMittelwerte.npy')
+#trStd = np.load('trStd.npy')
+#testStd = np.load('testStd.npy')
+#trDesk = np.hstack((trMittelwerte,trStd))
+#testDesk = np.hstack((testMittelwerte, testStd))
 
 #Wähle 1D Histos gewichtet als Deskriptor:
 #trDesk = np.load('tr1DHistosGewichtet.npy')
@@ -88,25 +92,25 @@ trLabels = np.load('trLabels.npy')
 testLabels = np.load('testLabels.npy')
 
 #Nearest Neighbour
-#predictions = klassifiziereNN(trDesk, testDesk, trLabels)
+predictions = klassifiziereNN(trDesk, testDesk, trLabels)
 
 #Berechnung der Trefferquote
-#evaluatedPredictions = predictions == testLabels
-#correctPredictions = sum(evaluatedPredictions)
-#print("Trefferquote:", correctPredictions / len(testLabels) * 100, "%")
+evaluatedPredictions = predictions == testLabels
+correctPredictions = sum(evaluatedPredictions)
+print("Trefferquote:", correctPredictions / len(testLabels) * 100, "%")
 
 #Berechnung der Confusion Matrix
-#cMatrix = ConfusionMatrix(predictions, testLabels, 16)
-#print(cMatrix)
+cMatrix = ConfusionMatrix(predictions, testLabels, 16)
+print(cMatrix)
 
 #k-NearestNeighbour
-for i in range(10):
-    k = i +1
-    predictions = klassifiziereKNN(trDesk, testDesk, trLabels, k)
-    evaluatedPredictions = predictions == testLabels
-    correctPredictions = sum(evaluatedPredictions)
-    print("Trefferquote k = "+str(k)+":", correctPredictions / len(testLabels) * 100, "%")
+#for i in range(10):
+#    k = i +1
+#    predictions = klassifiziereKNN(trDesk, testDesk, trLabels, k)
+#    evaluatedPredictions = predictions == testLabels
+#    correctPredictions = sum(evaluatedPredictions)
+#    print("Trefferquote k = "+str(k)+":", correctPredictions / len(testLabels) * 100, "%")
 
-    # Berechnung der Confusion Matrix
-    cMatrix = ConfusionMatrix(predictions, testLabels, 16)
-    print(cMatrix)
+#    # Berechnung der Confusion Matrix
+#    cMatrix = ConfusionMatrix(predictions, testLabels, 16)
+#    print(cMatrix)
