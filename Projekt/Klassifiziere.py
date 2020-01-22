@@ -65,12 +65,12 @@ def ConfusionMatrix(prediction, validation, labelCount):
 _, labels, _ = walk("./DataSet").__next__()
 
 #Mittelwert Dumm als Deskriptor
-trDesk = np.load('trMittelwerteDumm.npy')
-testDesk = np.load('testMittelwerteDumm.npy')
+#trDesk = np.load('trMittelwerteDumm.npy')
+#testDesk = np.load('testMittelwerteDumm.npy')
 
 #Wähle Mittelwert als Deskriptor
-#trDesk = np.load('trMittelwerte.npy')
-#testDesk = np.load('testMittelwerte.npy')
+#trDesk = np.load('trMittelwerte400.npy')
+#testDesk = np.load('testMittelwerte400.npy')
 
 #Wähle Mittelwert und Standardabweichung als Deskriptor
 #trMittelwerte = np.load('trMittelwerte.npy')
@@ -88,8 +88,13 @@ testDesk = np.load('testMittelwerteDumm.npy')
 #trDesk = np.load('tr3DHistosGewichtet.npy')
 #testDesk = np.load('test3DHistosGewichtet.npy')
 
-trLabels = np.load('trLabels.npy')
-testLabels = np.load('testLabels.npy')
+#HOG als Deskriptor
+trDesk = np.load('trHOG_400')
+testDesk = np.load('testHOG_400')
+
+
+trLabels = np.load('trLabels400.npy')
+testLabels = np.load('testLabels400.npy')
 
 #Nearest Neighbour
 predictions = klassifiziereNN(trDesk, testDesk, trLabels)
@@ -114,3 +119,4 @@ print(cMatrix)
 #    # Berechnung der Confusion Matrix
 #    cMatrix = ConfusionMatrix(predictions, testLabels, 16)
 #    print(cMatrix)
+

@@ -26,7 +26,7 @@ from skimage.io import imread
 from os import walk
 from skimage.color import rgb2hsv
 from skimage.filters import threshold_otsu
-
+from skimage.feature import hog
 ANZAHLPIXEL = 320 * 258
 
 """
@@ -178,6 +178,17 @@ def erstelleVektoren(imgs, masks):
         print(i)
     return np.asarray(vektoren)
 
+
+def berechne_hog(imgs,masks):
+    _hogs = []
+    for i in range(len(imgs)):
+        maske = masks[i]
+        img_mask = imgs[i]*maske[:,:, None]
+        fd, img_hog = hog(img_mask, orientations=8, pixels_per_cell=(16, 16), cells_per_block=(1, 1), visualize=True, multichannel=True)
+        _hogs.append(img_hog)
+    return _hogs
+
+
 #Die Test Area:
 
 #testBild1 = imread("./DataSet/Carambola/Training/Carambola_135.png")
@@ -207,14 +218,25 @@ def erstelleVektoren(imgs, masks):
 _, labels, _ = walk("./DataSet").__next__()
 
 #Pfadstrings der Trainingsdaten
+#trStrings = []
+#for label in labels:
+#    trStrings += glob.glob("./DataSet/" + label + "/Training/*.png")
+
+#Haelfte der Pfadstrings
 trStrings = []
 for label in labels:
-    trStrings += glob.glob("./DataSet/" + label + "/Training/*.png")
+    for i in range(400):
+        trStrings.append("./DataSet/" + label + "/Training/"+label+"_"+str(i)+".png")
 
 #Labels der Trainingsdaten
+#trLabels = []
+#for i in range(len(labels)):
+#    trLabels += [i] * 800
+
+#Haelfte der Labels
 trLabels = []
 for i in range(len(labels)):
-    trLabels += [i] * 800
+    trLabels += [i] * 400
 
 #Pfadstrings der Testdaten
 testStrings = []
@@ -225,6 +247,9 @@ for label in labels:
 testLabels = []
 for i in range(len(labels)):
     testLabels += [i] * 200
+
+#np.save('trLabels400',trLabels)
+#np.save('testLabels400', testLabels)
 
 print('Einlesen der Bilder:')
 
@@ -244,10 +269,18 @@ for path in testStrings:
     print(i)
     i += 1
 
-#print('Erstelle Masken:')
-#trMasks = createSMasks(trImgs)
-#print('Erstelle TestMasken:')
-#testMasks = createSMasks(testImgs)
+print('Erstelle Masken:')
+trMasks = createSMasks(trImgs)
+print('Erstelle TestMasken:')
+testMasks = createSMasks(testImgs)
+
+
+#HOGs berechnen
+tr_hogs = berechne_hog(trImgs,trMasks)
+test_hogs = berechne_hog(testImgs, testMasks)
+
+np.save('trHOG_400', tr_hogs)
+np.save('testHOG_400', test_hogs)
 
 
 #Vektoren berechnen:
@@ -268,15 +301,15 @@ for path in testStrings:
 #Mittelwerte berechnen:
 
 #nicht maskiert:
-trMittelwerte = []
-for i in range(len(trImgs)):
-    trMittelwerte.append(np.mean(trImgs[i], axis = (0,1)))
-testMittelwerte = []
-for i in range(len(testImgs)):
-    testMittelwerte.append(np.mean(testImgs[i], axis = (0,1)))
+#trMittelwerte = []
+#for i in range(len(trImgs)):
+#    trMittelwerte.append(np.mean(trImgs[i], axis = (0,1)))
+#testMittelwerte = []
+#for i in range(len(testImgs)):
+#    testMittelwerte.append(np.mean(testImgs[i], axis = (0,1)))
 
-np.save('trMittelwerteDumm', trMittelwerte)
-np.save('testMittelwerteDumm',testMittelwerte)
+#np.save('trMittelwerteDumm', trMittelwerte)
+#np.save('testMittelwerteDumm',testMittelwerte)
 
 #mit berechneMittelwert:
 #trMittelwerte = berechneMaskierteMittelwerte(trImgs, trMasks)
@@ -293,6 +326,8 @@ np.save('testMittelwerteDumm',testMittelwerte)
 #np.save('trMittelwerte',trMittelwerte)
 #np.save('testMittelwerte', testMittelwerte)
 
+#np.save('trMittelwerte400',trMittelwerte)
+#np.save('testMittelwerte400', testMittelwerte)
 
 #Standardabweichungen berechnen:
 
