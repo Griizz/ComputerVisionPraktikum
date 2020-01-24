@@ -61,13 +61,13 @@ def berechneMaskierteMittelwerte(imgs, masks):
 """
 erwartet vektor als eingabe
 """
-def erstelle_1d_histos_gewichtet(imgs):
+def erstelle_1d_histos_gewichtet(imgs,b):
     i = 0
     _hist_vektor = []
     for img in imgs:
-        histR = np.histogram(img[:,0], bins=8, range=(0, 256))[0]
-        histG = np.histogram(img[:,1], bins=8, range=(0, 256))[0]
-        histB = np.histogram(img[:,2], bins=8, range=(0, 256))[0]
+        histR = np.histogram(img[:,0], bins=b, range=(0, 256))[0]
+        histG = np.histogram(img[:,1], bins=b, range=(0, 256))[0]
+        histB = np.histogram(img[:,2], bins=b, range=(0, 256))[0]
         histR = histR * (ANZAHLPIXEL/len(img))
         histG = histG * (ANZAHLPIXEL/len(img))
         histB = histB * (ANZAHLPIXEL/len(img))
@@ -90,25 +90,26 @@ def erstelle_1d_histo(imgs):
 """
 Hier wir die Vektorfkt benutzt um die maskierten Stellen zu entfernen
 """
-def erstelle_3d_histos_gewichtet(imgs):
+def erstelle_3d_histos_gewichtet(imgs,b):
     _hist3d = []
     for img in imgs:
 
-        _hist3d.append(np.histogramdd(img, bins = [8,8,8], range=((0,256),(0,256),(0,256)))[0]*ANZAHLPIXEL/len(img))
+        _hist3d.append(np.histogramdd(img, bins = [b,b,b], range=((0,256),(0,256),(0,256)))[0]*ANZAHLPIXEL/len(img))
 
     return np.asarray(_hist3d)
 
 
 """
-Hier wir die Vektorfkt benutzt um die maskierten Stellen zu entfernen
+Hier wir die Vektorfkt benutzt um die maskierten Stellen zu entfernen, b ist anzahl bins
 """
-def erstelle_3d_histos_mit_vektor(imgs):
+def erstelle_3d_histos_mit_vektor(imgs, b):
     _hist3d = []
     for img in imgs:
 
-        _hist3d.append(np.histogramdd(img, bins = [8,8,8], range=((0,256),(0,256),(0,256)))[0])
+        _hist3d.append(np.histogramdd(img, bins = [b,b,b], range=((0,256),(0,256),(0,256)))[0])
 
     return np.asarray(_hist3d)
+
 
 """
 Hier ist bei der range die 0 nicht berücksichtigt weil bei den input Bildern nur die Pixel den Wert 0 haben die durch die Maske entfernt wurden.
@@ -215,7 +216,7 @@ def berechne_hog(imgs,masks):
 
 
 #labels = ["Apple_Green", "Apple_Red", "Banana", "Carambola", "Guava", "Kiwi", "Mango", "Muskmelon", "Orange", "Peach", "Pear", "Persimmon", "Pitaya", "Plum", "Pomegranate", "Tomatoes"]
-_, labels, _ = walk("./DataSet").__next__()
+#_, labels, _ = walk("./DataSet").__next__()
 
 #Pfadstrings der Trainingsdaten
 #trStrings = []
@@ -223,10 +224,10 @@ _, labels, _ = walk("./DataSet").__next__()
 #    trStrings += glob.glob("./DataSet/" + label + "/Training/*.png")
 
 #Haelfte der Pfadstrings
-trStrings = []
-for label in labels:
-    for i in range(400):
-        trStrings.append("./DataSet/" + label + "/Training/"+label+"_"+str(i)+".png")
+#trStrings = []
+#for label in labels:
+#    for i in range(400):
+#        trStrings.append("./DataSet/" + label + "/Training/"+label+"_"+str(i)+".png")
 
 #Labels der Trainingsdaten
 #trLabels = []
@@ -234,53 +235,53 @@ for label in labels:
 #    trLabels += [i] * 800
 
 #Haelfte der Labels
-trLabels = []
-for i in range(len(labels)):
-    trLabels += [i] * 400
+#trLabels = []
+#for i in range(len(labels)):
+#    trLabels += [i] * 400
 
 #Pfadstrings der Testdaten
-testStrings = []
-for label in labels:
-    testStrings += glob.glob("./DataSet/" + label + "/Test/*.png")
+#testStrings = []
+#for label in labels:
+#    testStrings += glob.glob("./DataSet/" + label + "/Test/*.png")
 
 #Labels der Testdaten
-testLabels = []
-for i in range(len(labels)):
-    testLabels += [i] * 200
+#testLabels = []
+#for i in range(len(labels)):
+#    testLabels += [i] * 200
 
 #np.save('trLabels400',trLabels)
 #np.save('testLabels400', testLabels)
 
-print('Einlesen der Bilder:')
+#print('Einlesen der Bilder:')
 
 #Einlesen der Bilder
-i = 0
-trImgs = []
-for path in trStrings:
-    trImgs.append(imread(path))
-    print(i)
-    i += 1
+#i = 0
+#trImgs = []
+#for path in trStrings:
+#    trImgs.append(imread(path))
+#    print(i)
+#    i += 1
 
-print('Einlesen der TestBilder:')
-i=0
-testImgs = []
-for path in testStrings:
-    testImgs.append(imread(path))
-    print(i)
-    i += 1
+#print('Einlesen der TestBilder:')
+#i=0
+#testImgs = []
+#for path in testStrings:
+#    testImgs.append(imread(path))
+#    print(i)
+#    i += 1
 
-print('Erstelle Masken:')
-trMasks = createSMasks(trImgs)
-print('Erstelle TestMasken:')
-testMasks = createSMasks(testImgs)
+#print('Erstelle Masken:')
+#trMasks = createSMasks(trImgs)
+#print('Erstelle TestMasken:')
+#testMasks = createSMasks(testImgs)
 
 
 #HOGs berechnen
-tr_hogs = berechne_hog(trImgs,trMasks)
-test_hogs = berechne_hog(testImgs, testMasks)
+#tr_hogs = berechne_hog(trImgs,trMasks)
+#test_hogs = berechne_hog(testImgs, testMasks)
 
-np.save('trHOG_400', tr_hogs)
-np.save('testHOG_400', test_hogs)
+#np.save('trHOG_400', tr_hogs)
+#np.save('testHOG_400', test_hogs)
 
 
 #Vektoren berechnen:
@@ -295,8 +296,8 @@ np.save('testHOG_400', test_hogs)
 
 
 #Vektoren laden:
-#trVektoren = np.load('trVektoren.npy',allow_pickle= True)
-#testVektoren = np.load('testVektoren.npy', allow_pickle= True)
+trVektoren = np.load('trVektoren.npy',allow_pickle= True)
+testVektoren = np.load('testVektoren.npy', allow_pickle= True)
 
 #Mittelwerte berechnen:
 
@@ -346,33 +347,32 @@ np.save('testHOG_400', test_hogs)
 
 
 #1D Histos gewichtet berechnen:
-
 #print("Erstelle 1D Histos Training:")
-#tr1DHistosGewichtet = erstelle_1d_histos_gewichtet(trVektoren)
+#tr1DHistosGewichtet = erstelle_1d_histos_gewichtet(trVektoren,32)
 #print("Erstelle 1D Histos Test:")
-#test1DHistosGewichtet = erstelle_1d_histos_gewichtet(testVektoren)
+#test1DHistosGewichtet = erstelle_1d_histos_gewichtet(testVektoren,32)
 
-#np.save('tr1DHistosGewichtet', tr1DHistosGewichtet)
-#np.save('test1DHistosGewichtet', test1DHistosGewichtet)
+#np.save('tr1DHistosGewichtet32bins', tr1DHistosGewichtet)
+#np.save('test1DHistosGewichtet32bins', test1DHistosGewichtet)
 
 
 #3D Histos:
 #print("Erstelle 3D Histos Training:")
-#tr3DHistos = erstelle_3d_histos_mit_vektor(trVektoren)
+#tr3DHistos = erstelle_3d_histos_mit_vektor(trVektoren,4)
 #print("Erstelle 3D Histos Test:")
-#test3DHistos = erstelle_3d_histos_mit_vektor(testVektoren)
+#test3DHistos = erstelle_3d_histos_mit_vektor(testVektoren,4)
 
-#np.save('tr3DHistos', tr3DHistos)
-#np.save('test3DHistos', test3DHistos)
+#np.save('tr3DHistos4bins', tr3DHistos)
+#np.save('test3DHistos4bins', test3DHistos)
 
 #3D Histos gewichtet:
-#print("Erstelle 3D Histos Training:")
-#tr3DHistosGewichtet = erstelle_3d_histos_gewichtet(trVektoren)
-#print("Erstelle 3D Histos Test:")
-#test3DHistosGewichtet = erstelle_3d_histos_gewichtet(testVektoren)
+print("Erstelle 3D Histos Training:")
+tr3DHistosGewichtet = erstelle_3d_histos_gewichtet(trVektoren,32)
+print("Erstelle 3D Histos Test:")
+test3DHistosGewichtet = erstelle_3d_histos_gewichtet(testVektoren,32)
 
-#np.save('tr3DHistosGewichtet', tr3DHistosGewichtet)
-#np.save('test3DHistosGewichtet', test3DHistosGewichtet)
+np.save('tr3DHistosGewichtet32bins', tr3DHistosGewichtet)
+np.save('test3DHistosGewichtet32bins', test3DHistosGewichtet)
 
 #np.save('trLabels',trLabels)
 #np.save('testLabels', testLabels)
