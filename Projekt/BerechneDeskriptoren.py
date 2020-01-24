@@ -132,33 +132,33 @@ def berechneKanten(imgs,masks):
         
     return np.asarray(Bildkanten)
 """
-Falls ein Pixel den Wert 0 hat wird er auf 1 gesetzt und anschließend wird das Bild maskiert.
+Berechnet 3d HOG und erstellt daraus dann ein 3d histo, hog hat Winkelinformationen deshalb ist die Range 0-360
 """
-def entferneNull(imgs):
-    img_noNull = []
-    for img in imgs:
-        imgS = rgb2hsv(img)[:, :, 1]
-        for x in range(len(img[:, 0, 0])):
-            for y in range(len(img[0, :, 0])):
-                pixel_r = img[x, y, 0]
-                pixel_g = img[x, y, 1]
-                pixel_b = img[x, y, 2]
-                if pixel_r == 0:
-                    img[x, y, 0] = 1
-                elif pixel_g == 0:
-                    img[x, y, 1] = 1
-                elif pixel_b == 0:
-                    img[x, y, 2] = 1
+def berechne_HOG(imgs):
+    hogs = []
+    for i in range(len(imgs)):
+        imgS = rgb2hsv(imgs[i])[:, :, 1]
         mask = (imgS > threshold_otsu(imgS))
-        cropt = img * mask[:, :, None]
-        img_noNull.append(cropt)
-    return img_noNull
 
+        # Calculate gradient
+        gx = cv.Sobel(imgs[i], cv.CV_32F, 1, 0, ksize=1)
+        gy = cv.Sobel(imgs[i], cv.CV_32F, 0, 1, ksize=1)
+        mag, angle = cv.cartToPolar(gx, gy, angleInDegrees=True)
 
-#tr_mBilder = entferneNull(trImgs)
-#tr_hist_noNull = erstelle_3d_histo(tr_mBilder)
-#test_mBilder = entferneNull(testImgs)
-#test_hist_noNull = erstelle_3d_histo(test_mBilder)
+        vektor = []
+        for x in range(imgs[i].shape[0]):
+            for y in range(imgs[i].shape[1]):
+                if (mask[x, y] != 0):
+                    vektor.append(angle[x, y, :])
+        vek = np.asarray(vektor)
+        _hist = np.histogramdd(vek, bins=[8, 8, 8], range=((0, 360), (0, 360), (0, 360)))[0]
+        hogs.append(_hist)
+    return hogs
+
+tr_hog = berechne_HOG(trImgs)
+np.save('tr_hog',tr_hog)
+test_hog = berechne_HOG(testImgs)
+np.save('test_hog',test_hog)
 
 """
 Erstelle aus einem Bild und einer Maske einen Vektor, der ausschließlich die nach der Maske relevanten Pixel des Bildes in einem Vektor speichert.
