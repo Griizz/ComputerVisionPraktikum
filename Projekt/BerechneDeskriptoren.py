@@ -122,43 +122,6 @@ def erstelle_3d_histo(imgs):
 
     return np.asarray(_hist3d)
 
-def berechneKanten(imgs,masks):
-    Bildkanten = []
-    for i in range(len(imgs)):
-        gray = cv.cvtColor(imgs[i], cv.COLOR_BGR2GRAY)
-        img_sobel = sobel(gray, mask=None)
-        _img = img_sobel*masks[i]
-        Bildkanten.append(_img)
-        
-    return np.asarray(Bildkanten)
-"""
-Berechnet 3d HOG und erstellt daraus dann ein 3d histo, hog hat Winkelinformationen deshalb ist die Range 0-360
-"""
-def berechne_HOG(imgs):
-    hogs = []
-    for i in range(len(imgs)):
-        imgS = rgb2hsv(imgs[i])[:, :, 1]
-        mask = (imgS > threshold_otsu(imgS))
-
-        # Calculate gradient
-        gx = cv.Sobel(imgs[i], cv.CV_32F, 1, 0, ksize=1)
-        gy = cv.Sobel(imgs[i], cv.CV_32F, 0, 1, ksize=1)
-        mag, angle = cv.cartToPolar(gx, gy, angleInDegrees=True)
-
-        vektor = []
-        for x in range(imgs[i].shape[0]):
-            for y in range(imgs[i].shape[1]):
-                if (mask[x, y] != 0):
-                    vektor.append(angle[x, y, :])
-        vek = np.asarray(vektor)
-        _hist = np.histogramdd(vek, bins=[8, 8, 8], range=((0, 360), (0, 360), (0, 360)))[0]
-        hogs.append(_hist)
-    return hogs
-
-tr_hog = berechne_HOG(trImgs)
-np.save('tr_hog',tr_hog)
-test_hog = berechne_HOG(testImgs)
-np.save('test_hog',test_hog)
 
 """
 Erstelle aus einem Bild und einer Maske einen Vektor, der ausschließlich die nach der Maske relevanten Pixel des Bildes in einem Vektor speichert.
@@ -185,8 +148,10 @@ def berechne_hog(imgs,masks):
     for i in range(len(imgs)):
         maske = masks[i]
         img_mask = imgs[i]*maske[:,:, None]
-        fd, img_hog = hog(img_mask, orientations=8, pixels_per_cell=(16, 16), cells_per_block=(1, 1), visualize=True, multichannel=True)
-        _hogs.append(img_hog)
+        gx = cv.Sobel(img_mask, cv.CV_32F, 1, 0, ksize=1)
+        gy = cv.Sobel(img_mask, cv.CV_32F, 0, 1, ksize=1)
+        mag, angle = cv.cartToPolar(gx, gy, angleInDegrees=True)
+        _hogs.append(angle)
     return _hogs
 
 
