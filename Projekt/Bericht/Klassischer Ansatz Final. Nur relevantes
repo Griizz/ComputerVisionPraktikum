@@ -1,0 +1,276 @@
+import numpy as np
+from skimage.io import imread
+from os import walk
+from skimage.color import rgb2hsv,rgb2lab
+from skimage.filters import threshold_otsu
+import time
+
+
+'''
+========================================================================================================================
+ladeBilder:
+anzahl test: anzahl der testbilder
+anzahl tr: anzahl der trainingsbilder
+gibt die bilder in jeweils einem array zurück und zusätzlich zwei arrays mit den dazugehörigen labeln
+'''
+
+def ladeBilder(anzahl_test,anzahl_training):
+    # labels = ["Apple_Green", "Apple_Red", "Banana", "Carambola", "Guava", "Kiwi", "Mango", "Muskmelon", "Orange", "Peach", "Pear", "Persimmon", "Pitaya", "Plum", "Pomegranate", "Tomatoes"]
+     _, labels, _ = walk("./DataSet").__next__()
+
+
+     #trainings Pfadstrings
+     trStrings = []
+     for label in labels:
+        for i in range(anzahl_training):
+            trStrings.append("./DataSet/" + label + "/Training/"+label+"_"+str(i)+".png")
+
+     #Labels der Trainingsdaten
+     trLabels = []
+     for i in range(len(labels)):
+        trLabels += [i] * anzahl_training
+
+     #Haelfte der Labels
+     trLabels = []
+     for i in range(len(labels)):
+        trLabels += [i] * anzahl_training
+
+     #Pfadstrings der Testdaten
+     testStrings = []
+     for label in labels:
+         for i in range(anzahl_test):
+             index = 800 + i
+             testStrings.append("./DataSet/" + label + "/Test/" + label + "_" + str(index) + ".png")
+
+    #Labels der Testdaten
+     testLabels = []
+     for i in range(len(labels)):
+        testLabels += [i] * anzahl_test
+
+
+     print('Einlesen der Bilder:')
+
+     #Einlesen der Bilder
+     i = 0
+     trImgs = []
+     for path in trStrings:
+        trImgs.append(imread(path))
+        print(i)
+        i += 1
+
+     print('Einlesen der TestBilder:')
+     i=0
+     testImgs = []
+     for path in testStrings:
+        testImgs.append(imread(path))
+        print(i)
+        i += 1
+
+     return np.asarray(testLabels),testImgs,np.asarray(trLabels),trImgs
+
+'''
+========================================================================================================================
+erstelleVektorRelevanterPixel:
+bekommt ein bild und die daugehörigen maske.  speichert alle pixel die auf der maske einen wert != 0 haben
+'''
+def erstelleVektorRelevanterPixel(img, mask):
+    vektor = []
+    i = 0
+    for x in range(img.shape[0]):
+        for y in range(img.shape[1]):
+            if(mask[x,y] != 0):
+                vektor.append(img[x,y])
+    return np.asarray(vektor)
+'''
+=======================================================================================================================
+'''
+def AusschneidenChroma(imgs):
+    vektoren = []
+    for img in imgs:
+        imgLAB = rgb2lab(img)
+        imgC = np.sqrt(np.power(imgLAB[:, :, 1], 2) + np.power(imgLAB[:, :, 2], 2))
+        #imgCq = np.power(imgC,2)
+        mask = (imgC > threshold_otsu(imgC))
+        vektoren.append(erstelleVektorRelevanterPixel(img, mask))
+    return np.asarray(vektoren)
+
+def AusschneidenSaturation(imgs):
+    vektoren = []
+    for img in imgs:
+        imgS = rgb2hsv(img)[:, :, 1]
+        mask = (imgS > threshold_otsu(imgS))
+        vektoren.append(erstelleVektorRelevanterPixel(img, mask))
+    return np.asarray(vektoren)
+
+def unausgeschnitten(imgs):
+    vektoren = []
+    for i in range(len(imgs)):
+        vektoren.append( imgs[i].reshape(imgs[i].shape[0]*imgs[i].shape[1],3))
+    return np.asarray(vektoren)
+
+
+'''
+========================================================================================================================
+
+hier wird eine der obenstehenden funktionen ausgewählt über string colorspace = "HSV_C" oder "LAB_C"...
+
+'''
+
+def treffeAuswahl(methode,imgs):
+
+    if methode is "AusschneidenSaturation":
+        return AusschneidenSaturation(imgs)
+    elif methode is "AusschneidenChroma":
+        return AusschneidenChroma(imgs)
+    elif methode is "unausgeschnitten":
+        return unausgeschnitten(imgs)
+
+'''
+========================================================================================================================
+
+hier werden die Deskriptoren berechnet
+dabei haben die histogramme als zusätzliche parameter array : bins mit drei einträgen und die range des jeweiligen farbraums 
+'''
+
+
+def berechneMittelwerteVektor(vektoren):
+    mittelwerte = []
+    for vektor in vektoren:
+        mittelwerte.append(np.mean(vektor,axis=0))
+    return np.asarray(mittelwerte)
+
+def getSTDsVektor(vektoren):
+    STD = []
+    for vektor in vektoren:
+        STD.append(np.std(vektor,axis=0))
+    return np.asarray(STD)
+
+def erstelle_1D_histo_gewichtet(vektoren):
+    _hist_vektor = []
+    ANZAHLPIXEL = 320 * 258
+    for vektor in vektoren:
+        hist0 = np.histogram(vektor[:, 0], bins=30, range=(0,256))[0] * ANZAHLPIXEL / len(vektor)
+        hist1 = np.histogram(vektor[:, 1], bins=30, range=(0,256))[0] * ANZAHLPIXEL / len(vektor)
+        hist2 = np.histogram(vektor[:, 2], bins=30, range=(0,256))[0] * ANZAHLPIXEL / len(vektor)
+        _hist_vektor.append(np.hstack((hist0,hist1,hist2)))
+    return np.asarray(_hist_vektor)
+
+def erstelle_3d_histos_gewichtet(imgs,bins,range):
+    ANZAHLPIXEL = 320 * 258
+    _hist = []
+
+    for img in imgs:
+        _hist.append(np.histogramdd(img, bins = bins, range=range)[0]*ANZAHLPIXEL/len(img))
+
+    return np.asarray(_hist)
+
+def combineDesktiptor(dis1,dis2):
+    dis_new = np.hstack((dis1,dis2))
+    return np.asarray(dis_new)
+
+
+'''
+========================================================================================================================
+
+hier werden die deskriptoren ausgewertet und anschließend eine cm geprinted
+'''
+
+def klassifiziereNN(trDesk, testDesk, trLabels):
+    predictions = []
+    deltaDesk = [0] * len(trDesk)
+
+    for i in range(len(testDesk)):
+        x = (trDesk - testDesk[i])
+        for j in range(len(trDesk)):
+            deltaDesk[j] = np.sqrt(np.sum((x[j, :]) ** 2))
+        n = deltaDesk.index(min(deltaDesk))
+        predictions.append(trLabels[n])
+    return predictions
+
+def evaluate(predictions, testLabels):
+
+    evaluatedPredictions = predictions == testLabels  # Berechnung der Trefferquote
+    correctPredictions = sum(evaluatedPredictions)
+    trefferquote = correctPredictions / len(testLabels) * 100
+    matrix = ConfusionMatrix(predictions,testLabels,16)
+    return print(str(trefferquote)+":", matrix, sep="\n")
+
+
+
+def ConfusionMatrix(prediction, validation, labelCount):
+    '''
+    :param prediction: the 1-Dimensional Array of predicted Labels
+    :param validation: the 1-Dimensional Array of actual Labels
+    :param labelCount: the numer of labels
+    :return: a labelCount x labelCount ConfusionMatrix
+    '''
+
+    matrix = np.zeros((labelCount, labelCount), dtype=int)
+
+    for i in range(len(prediction)):
+        matrix[validation[i], prediction[i]] += 1
+    return matrix
+'''
+========================================================================================================================
+
+'''
+def erstelleDeskriptoren(testvektor,trvektor,b,r,test_Labels,tr_Labels):  #b sind die bins für die 3d histos. r die range
+    i = 5
+    while(i>= 1):
+        erstelleDeskriptorUNDAuswertung(i,testvektor,trvektor,b,r,test_Labels,tr_Labels)
+        i -= 1
+    return print("Deskriptoren erstellt und ausgewertet")
+'''
+erstelleDeskriptorUNDAuswertung:
+erstellt paarweise Deskriptoren wertet diese aus und gibt die trefferanzahl und confusion matrix in der konsole aus
+'''
+def erstelleDeskriptorUNDAuswertung(i,testvektor,trvektor,b,r,test_Labels,tr_Labels):
+    if i == 5:
+
+        test_mean = berechneMittelwerteVektor(testvektor)
+        tr_mean = berechneMittelwerteVektor(trvektor)
+        predictions = klassifiziereNN(tr_mean, test_mean, tr_Labels)
+
+        return  print("mean:"),evaluate(predictions, test_Labels)
+
+
+    elif i == 4:
+        test_std = getSTDsVektor(testvektor)
+        tr_std = getSTDsVektor(trvektor)
+        predictions = klassifiziereNN(tr_std, test_std, tr_Labels)
+
+        return print("std:"),evaluate(predictions, test_Labels)
+
+    elif i == 3:
+        test_mean = berechneMittelwerteVektor(testvektor)
+        tr_mean = berechneMittelwerteVektor(trvektor)
+        test_std = getSTDsVektor(testvektor)
+        tr_std = getSTDsVektor(trvektor)
+        tr_mean_std = combineDesktiptor(tr_mean,tr_std)
+        test_mean_std = combineDesktiptor(test_mean,test_std)
+        predictions = klassifiziereNN(tr_mean_std, test_mean_std, tr_Labels)
+        return print("mean+std:"),evaluate(predictions, test_Labels)
+    elif i == 2:
+        test_3dhist = erstelle_3d_histos_gewichtet(testvektor,b,r)
+        tr_3dhist = erstelle_3d_histos_gewichtet(trvektor,b,r)
+        predictions = klassifiziereNN(tr_3dhist, test_3dhist, tr_Labels)
+        return print("3dHisto:"),evaluate(predictions, test_Labels)
+
+    elif i == 1:
+        test_1dhist = erstelle_1D_histo_gewichtet(testvektor)
+        tr_1dhist = erstelle_1D_histo_gewichtet(trvektor)
+        predictions = klassifiziereNN(tr_1dhist, test_1dhist, tr_Labels)
+        return print("1d histo:"),evaluate(predictions, test_Labels)
+
+'''
+=======================================================================================================================
+hier werden die funktionen aufgerufen
+
+'''
+testLabels, testImgs,trLabels, trImgs = ladeBilder(1,2)
+st = time.time()
+testvek = treffeAuswahl("unausgeschnitten",testImgs) #In den string muss z.b RGB_C geschrieben werden
+trvek = treffeAuswahl("unausgeschnitten",trImgs)    #In den string muss z.b RGB_C geschrieben werden
+print(str(time.time() - st))
+erstelleDeskriptoren(testvek,trvek,[14,14,14], ((0,256),(0,256),(0,256)),testLabels,trLabels)
+print("fertig")
